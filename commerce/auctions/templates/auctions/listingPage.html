@@ -1,0 +1,8 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>{{ title }}</h2>
+    <h4>current price: ${{topBid}}</h4>
+    <img src="{{imgUrl}}" alt = "image not found">
+    <h4>{{ description }}</h4>
+{% endblock %}
