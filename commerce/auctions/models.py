@@ -15,7 +15,8 @@ class auctionListing(models.Model):
     description = models.TextField()
     startingBid = models.DecimalField(max_digits=10, decimal_places=2)
     imgUrl = models.TextField()
-    catagory = models.CharField(max_length=64)
+    #category = models.CharField(max_length=64)#its own class
+    category = models.ManyToManyField("categoryModel", blank=True, related_name="postedListings")
 
     #which user posted the listing
     fromUser = models.ManyToManyField("User", blank=True, related_name="postedListings")
@@ -46,6 +47,8 @@ class comment(models.Model):
 
 
 
+class categoryModel(models.Model):
+    name = models.CharField(max_length=64)
 
 
 

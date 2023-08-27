@@ -1,16 +1,16 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
+    <h2>Watchlist</h2>
 
     <!--show all listings-->
     <!--include: title, description, current price, photo-->
     <!--im using come bootstrap classes btw-->
     <div class="container">
-        {% for listing in listings %}
+        {% for listing in watchlist %}
         <a href="{% url 'listingPage' listingId=listing.pk %}"> <!--pass on the listing id, so that it can be displayed-->
             <div class="row bg-secondary"> <!-- Add background color class here -->
-                <div class="col text-center"> 
+                <div class="col text-center">
                     {{ listing.title }}
                 </div>
             </div>

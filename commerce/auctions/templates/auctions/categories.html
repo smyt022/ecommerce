@@ -1,0 +1,18 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>All Categories</h2>
+
+    <!--show all listings-->
+    <!--include: title, description, current price, photo-->
+    <!--im using come bootstrap classes btw-->
+    <div class="container">
+        {% for category in categories %}
+        <ul>
+            <a href="{% url 'categoryPage' categoryName=category.name %}">{{category.name}}</a>
+        </ul>
+        {% endfor %}
+    </div>
+    
+    
+{% endblock %}
