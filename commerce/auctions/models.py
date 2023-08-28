@@ -9,7 +9,7 @@ class User(AbstractUser):
         return f"{self.id}: {self.username}"
  
 # auction listing model
-class auctionListing(models.Model):
+class auctionListing(models.Model): 
     #main item
     title = models.CharField(max_length=64)
     description = models.TextField()

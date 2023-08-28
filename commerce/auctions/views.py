@@ -176,9 +176,11 @@ def newAuction(request):
 
 
 def listingPage(request, listingId):
-    #get the listing instance, and user
+    #get the listing instance, username, category
     listing = auctionListing.objects.get(pk=listingId)
-    username = request.user.username
+    #have to do .all().first cuz its defined as a many-to-many attribute in the listing model
+    username = listing.fromUser.all().first().username 
+    category = listing.category.all().first().name
 
     
     if request.method == "POST":
@@ -203,6 +205,7 @@ def listingPage(request, listingId):
         #render page
         return render(request, "auctions/listingPage.html", {
             "posterUsername": username,
+            "category": category,
             "listing": listing,
             "watchBtnMsg": watchBtnMsg
         })
@@ -218,6 +221,7 @@ def listingPage(request, listingId):
         #render page
         return render(request, "auctions/listingPage.html", {
             "posterUsername": username,
+            "category": category,
             "listing": listing,
             "watchBtnMsg": watchBtnMsg
         })
