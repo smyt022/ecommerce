@@ -3,6 +3,7 @@
 {% block body %}
     <form method="post" action="{% url 'listingPage' listingId=listing.pk %}">
         {% csrf_token %}
+        <input type="hidden" name="POST_sender" value="watchBtnMsg"> <!--so we know what sent the post request -->
         <input type="hidden" name="watchBtnMsg" value="{{watchBtnMsg}}">
         <button type="submit" class="btn btn-primary">{{ watchBtnMsg }}</button> <!--watchlist button-->
     </form>
@@ -12,4 +13,37 @@
     <h6>category: {{category}}</h6>
     <img src="{{listing.imgUrl}}" alt = "image not found">
     <h5>{{ listing.description }}</h5>
+
+
+
+    <!--place bid form-->
+    <form method="post" action="{% url 'listingPage' listingId=listing.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="POST_sender" value="placeBidForm"> <!--so we know what sent the post request -->
+        <div>
+            {{placeBidForm}}
+        </div>
+
+        <input type="submit" value="Place Bid">
+    </form>
+    <h5>{{bidMessage}}</h5>
+
+
+
+    <!--COMMENTS-->
+    <h4>Comments:</h4>
+    {% for comment in listing.comments.all %}
+        <h5>{{ comment.fromUser.all.0.username }}:</h5>
+        <h6>{{comment.text}}</h6>
+    {% endfor %}
+    <!--comment form-->
+    <form method="post" action="{% url 'listingPage' listingId=listing.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="POST_sender" value="commentForm">
+        <div>
+            {{commentForm}}
+        </div>
+
+        <input type="submit" value="post">
+    </form>
 {% endblock %}

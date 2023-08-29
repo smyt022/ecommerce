@@ -20,9 +20,15 @@ class DecimalTwoPlacesField(forms.DecimalField):
 class newListingForm(forms.Form):
     title = forms.CharField(label="listing title")
     description = forms.CharField(widget=forms.Textarea, label = "discription")
-    startingBid = DecimalTwoPlacesField()
+    startingBid = DecimalTwoPlacesField(label="starting bid:")
     imgURL = forms.CharField(label="img url")
     category = forms.CharField(label = "category")
+
+class placeBidForm(forms.Form):
+    bidAmount = DecimalTwoPlacesField(label="Bid Amount:")
+
+class commentForm(forms.Form):
+    text = forms.CharField(label="comment")
 
 #helper functions\
 
@@ -184,32 +190,134 @@ def listingPage(request, listingId):
 
     
     if request.method == "POST":
-        #get the btn message from te post request, act accordingly
-        watchBtnMsg = request.POST.get("watchBtnMsg")
+        #determine what sent the post request
+        if request.POST.get("POST_sender") == "watchBtnMsg":
+            #get the btn message from the post request, act accordingly
+            watchBtnMsg = request.POST.get("watchBtnMsg")
 
-        if watchBtnMsg == "Add to Watchlist":
-            #add
-            request.user.watchItem.add(listing)
-        else:
-            #remove
-            request.user.watchItem.remove(listing)
+            if watchBtnMsg == "Add to Watchlist":
+                #add
+                request.user.watchItem.add(listing)
+            else:
+                #remove
+                request.user.watchItem.remove(listing)
 
-        #render the page like normal...
+            #render the page like normal...
 
-        #check if listing is on user watchlist
-        if isOnWatchlist(request.user, listing):
-            watchBtnMsg = "Remove from Watchlist"
-        else:
-            watchBtnMsg = "Add to Watchlist"
+            #check if listing is on user watchlist
+            if isOnWatchlist(request.user, listing):
+                watchBtnMsg = "Remove from Watchlist"
+            else:
+                watchBtnMsg = "Add to Watchlist"
 
-        #render page
-        return render(request, "auctions/listingPage.html", {
-            "posterUsername": username,
-            "category": category,
-            "listing": listing,
-            "watchBtnMsg": watchBtnMsg
-        })
-    
+            #render page
+            return render(request, "auctions/listingPage.html", {
+                "posterUsername": username,
+                "category": category,
+                "listing": listing,
+                "watchBtnMsg": watchBtnMsg,
+                "placeBidForm": placeBidForm(),
+                "bidMessage": " ",
+                "commentForm": commentForm()
+            })
+        elif request.POST.get("POST_sender") == "placeBidForm":
+            form = placeBidForm(request.POST)
+            if form.is_valid():
+
+                # extract form data 
+                bidAmount = form.cleaned_data["bidAmount"]
+
+                #check that the amount is valid
+                if bidAmount<listing.topBid:
+
+                    #render page with error message
+
+                    #check if listing is on user watchlist
+                    if isOnWatchlist(request.user, listing):
+                        watchBtnMsg = "Remove from Watchlist"
+                    else:
+                        watchBtnMsg = "Add to Watchlist"
+
+                    #render
+                    return render(request, "auctions/listingPage.html", {
+                        "posterUsername": username,
+                        "category": category,
+                        "listing": listing,
+                        "watchBtnMsg": watchBtnMsg,
+                        "placeBidForm": placeBidForm(),
+                        "bidMessage": "! place an amount greater than the current price !",
+                        "commentForm": commentForm()
+                    })
+
+                #create an instance of the bid model, establish relationship to user and listing
+                bidModel = bid(bidAmount=bidAmount)
+                bidModel.save()
+                bidModel.fromUser.add(request.user)
+                bidModel.listing.add(listing)
+                bidModel.save()
+
+                #update top bid
+                listing.topBid = bidModel.bidAmount
+
+                #render page like normal ...
+
+
+                #check if listing is on user watchlist
+                if isOnWatchlist(request.user, listing):
+                    watchBtnMsg = "Remove from Watchlist"
+                else:
+                    watchBtnMsg = "Add to Watchlist"
+
+                #render page
+                return render(request, "auctions/listingPage.html", {
+                    "posterUsername": username,
+                    "category": category,
+                    "listing": listing,
+                    "watchBtnMsg": watchBtnMsg,
+                    "placeBidForm": placeBidForm(),
+                    "bidMessage": " ",
+                    "commentForm": commentForm()
+                })
+
+            else:#form is not valid, go back to same listing page
+                return HttpResponseRedirect(reverse("listingPage", kwargs={'listingId':listingId}))
+
+        elif request.POST.get("POST_sender") == "commentForm":
+            #
+            form = commentForm(request.POST)
+            if form.is_valid():
+                
+                #extract form data
+                text = form.cleaned_data["text"]
+
+                #create instance of comment model, establish relationship to posting user and the listing
+                commentModel = comment(text=text)
+                commentModel.save()
+                commentModel.fromUser.add(request.user)
+                commentModel.listing.add(listing)
+                commentModel.save()
+
+                #render page like normal ...
+
+                #check if listing is on user watchlist
+                if isOnWatchlist(request.user, listing):
+                    watchBtnMsg = "Remove from Watchlist"
+                else:
+                    watchBtnMsg = "Add to Watchlist"
+
+                #render page
+                return render(request, "auctions/listingPage.html", {
+                    "posterUsername": username,
+                    "category": category,
+                    "listing": listing,
+                    "watchBtnMsg": watchBtnMsg,
+                    "placeBidForm": placeBidForm(),
+                    "bidMessage": " ",
+                    "commentForm": commentForm()
+                })
+
+            else:#form is not valid, go back to same listing page
+                return HttpResponseRedirect(reverse("listingPage", kwargs={'listingId':listingId}))
     else: #GET request
 
         #check if listing is on user watchlist
@@ -223,5 +331,8 @@ def listingPage(request, listingId):
             "posterUsername": username,
             "category": category,
             "listing": listing,
-            "watchBtnMsg": watchBtnMsg
+            "watchBtnMsg": watchBtnMsg,
+            "placeBidForm": placeBidForm(),
+            "bidMessage": " ",
+            "commentForm": commentForm()
         })
