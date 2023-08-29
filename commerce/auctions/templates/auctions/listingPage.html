@@ -1,18 +1,39 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
+
+    <!--congrats if the logged in user won-->
+    <!--<h1>highestBidder: {{highestBidder}}</h1>-->
+    {% if not listing.isActive and user.pk == highestBidder.pk %}
+        <button class="btn btn-success d-flex justify-content-center my-3 mx-auto">CONGRATS! YOU WON THE AUCTION</button>
+    {% endif %}
+
+    <!--delete button (only for the listing's fromUser)-->
+    {% if user.username == listing.fromUser.all.0.username %}
+        <form method="post" action="{% url 'listingPage' listingId=listing.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="POST_sender" value="closeBtn">
+            <button type="submit" class="btn btn-danger">CLOSE</button>
+        </form>
+    {% endif %}
+
+
+    <!--watchlist-->
     <form method="post" action="{% url 'listingPage' listingId=listing.pk %}">
         {% csrf_token %}
         <input type="hidden" name="POST_sender" value="watchBtnMsg"> <!--so we know what sent the post request -->
         <input type="hidden" name="watchBtnMsg" value="{{watchBtnMsg}}">
         <button type="submit" class="btn btn-primary">{{ watchBtnMsg }}</button> <!--watchlist button-->
     </form>
+
+    <!--content-->
     <h1>{{ listing.title }}</h1>
     <h6>posted by: {{posterUsername}}</h6>
     <h4>current price: ${{listing.topBid}}</h4>
     <h6>category: {{category}}</h6>
     <img src="{{listing.imgUrl}}" alt = "image not found">
     <h5>{{ listing.description }}</h5>
+
 
 
 

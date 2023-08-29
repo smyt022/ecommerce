@@ -15,6 +15,8 @@ class auctionListing(models.Model):
     description = models.TextField()
     startingBid = models.DecimalField(max_digits=10, decimal_places=2)
     imgUrl = models.TextField()
+    isActive = models.BooleanField(default=True)
+
     #category = models.CharField(max_length=64)#its own class
     category = models.ManyToManyField("categoryModel", blank=True, related_name="postedListings")
 

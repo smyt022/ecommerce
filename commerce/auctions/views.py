@@ -50,12 +50,24 @@ def categoryExists(categoryName):
     except ObjectDoesNotExist:
         return False
 
+def highestBidder(listing, topBid):#returns the user with the highest bid in a listing
+    highestBidder = "DONT KNOW"
+
+    #loop through all bids
+    bids = listing.bids.all()
+
+    for bid in bids:
+        #check if its highest
+        if bid.bidAmount == topBid:
+            highestBidder = bid.fromUser.all().first()
+
+    return highestBidder
 
 #view functions
 
 def index(request):
     return render(request, "auctions/index.html", {
-        "listings": auctionListing.objects.all() 
+        "listings": auctionListing.objects.filter(isActive=True) #show all active listings
     })
 
 @login_required
@@ -258,6 +270,7 @@ def listingPage(request, listingId):
 
                 #update top bid
                 listing.topBid = bidModel.bidAmount
+                listing.save()
 
                 #render page like normal ...
 
@@ -318,6 +331,14 @@ def listingPage(request, listingId):
 
             else:#form is not valid, go back to same listing page
                 return HttpResponseRedirect(reverse("listingPage", kwargs={'listingId':listingId}))
+            
+        elif request.POST.get("POST_sender") == "closeBtn":
+            #set as inactive
+            listing.isActive = False
+            listing.save()
+
+            #redirect to home
+            return HttpResponseRedirect(reverse("index"))
     else: #GET request
 
         #check if listing is on user watchlist
@@ -334,5 +355,6 @@ def listingPage(request, listingId):
             "watchBtnMsg": watchBtnMsg,
             "placeBidForm": placeBidForm(),
             "bidMessage": " ",
-            "commentForm": commentForm()
+            "commentForm": commentForm(),
+            "highestBidder": highestBidder(listing, listing.topBid)#.username
         })
