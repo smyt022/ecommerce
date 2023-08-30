@@ -73,7 +73,7 @@ def index(request):
 @login_required
 def watchlist_view(request):
     #
-    watchlist = request.user.watchItem.all()
+    watchlist = request.user.watchItem.filter(isActive=True)
     return render(request, "auctions/watchlist.html",{
         "watchlist": watchlist
     })
@@ -87,7 +87,7 @@ def categories_view(request):
 def category_view(request, categoryName):
 
     category = categoryModel.objects.get(name=categoryName)
-    listings = auctionListing.objects.filter(category=category)#get all the listings of the given category
+    listings = auctionListing.objects.filter(category=category, isActive=True)#get all the listings of the given category
     return render(request, "auctions/category.html", {
         "categoryName": categoryName,
         "listings": listings
@@ -342,10 +342,13 @@ def listingPage(request, listingId):
     else: #GET request
 
         #check if listing is on user watchlist
-        if isOnWatchlist(request.user, listing):
-            watchBtnMsg = "Remove from Watchlist"
+        if request.user.is_authenticated:
+            if isOnWatchlist(request.user, listing):
+                watchBtnMsg = "Remove from Watchlist"
+            else:
+                watchBtnMsg = "Add to Watchlist"
         else:
-            watchBtnMsg = "Add to Watchlist"
+            watchBtnMsg = "None"
 
         #render page
         return render(request, "auctions/listingPage.html", {
